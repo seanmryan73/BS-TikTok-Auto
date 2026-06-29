@@ -53,7 +53,9 @@ impl App {
                     .unwrap_or(4);
                 egui::ComboBox::from_id_salt("theme_selector")
                     .selected_text(self.theme.choice.label())
-                    .show_index(ui, &mut theme_idx, ThemeChoice::ALL.len(), |i| ThemeChoice::ALL[i].label());
+                    .show_index(ui, &mut theme_idx, ThemeChoice::ALL.len(), |i| {
+                        ThemeChoice::ALL[i].label()
+                    });
                 let chosen = ThemeChoice::ALL[theme_idx];
                 if chosen != self.theme.choice {
                     self.theme.choice = chosen;
@@ -92,24 +94,22 @@ impl eframe::App for App {
             self.show_tabs(ui);
         });
 
-        egui::CentralPanel::default().show_inside(ui, |ui| {
-            match self.active_tab {
-                Tab::Queue    => ui::queue_tab::show(ui),
-                Tab::Auth     => ui::auth_tab::show(ui),
-                Tab::Settings => {
-                    let changed = ui::settings_tab::show(ui, &mut self.settings.app, &mut self.theme.choice);
-                    if changed {
-                        self.settings.app.theme = self.theme.choice;
-                        self.save_settings();
-                    }
+        egui::CentralPanel::default().show_inside(ui, |ui| match self.active_tab {
+            Tab::Queue => ui::queue_tab::show(ui),
+            Tab::Auth => ui::auth_tab::show(ui),
+            Tab::Settings => {
+                let changed = ui::settings_tab::show(ui, &mut self.settings.app, &mut self.theme.choice);
+                if changed {
+                    self.settings.app.theme = self.theme.choice;
+                    self.save_settings();
                 }
-                Tab::About => {
-                    let reset = ui::about_tab::show(ui, &mut self.reset_confirm);
-                    if reset {
-                        self.settings.app = AppSettings::default();
-                        self.theme.choice = self.settings.app.theme;
-                        self.save_settings();
-                    }
+            }
+            Tab::About => {
+                let reset = ui::about_tab::show(ui, &mut self.reset_confirm);
+                if reset {
+                    self.settings.app = AppSettings::default();
+                    self.theme.choice = self.settings.app.theme;
+                    self.save_settings();
                 }
             }
         });

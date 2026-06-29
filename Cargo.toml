@@ -1,6 +1,6 @@
 [package]
 name = "bs-tiktok-auto"
-version = "2026.6.28"
+version = "2026.6.29-a"
 edition = "2021"
 authors = ["Sean Ryan <seanmryan@gmail.com>"]
 

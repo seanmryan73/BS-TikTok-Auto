@@ -15,13 +15,12 @@ pub fn show(ui: &mut egui::Ui, settings: &mut AppSettings, theme_choice: &mut Th
         .spacing([16.0, 8.0])
         .show(ui, |ui| {
             ui.label("Theme");
-            let mut theme_idx = ThemeChoice::ALL
-                .iter()
-                .position(|t| *t == *theme_choice)
-                .unwrap_or(4);
+            let mut theme_idx = ThemeChoice::ALL.iter().position(|t| *t == *theme_choice).unwrap_or(4);
             egui::ComboBox::from_id_salt("settings_theme")
                 .selected_text(theme_choice.label())
-                .show_index(ui, &mut theme_idx, ThemeChoice::ALL.len(), |i| ThemeChoice::ALL[i].label());
+                .show_index(ui, &mut theme_idx, ThemeChoice::ALL.len(), |i| {
+                    ThemeChoice::ALL[i].label()
+                });
             let chosen = ThemeChoice::ALL[theme_idx];
             if chosen != *theme_choice {
                 *theme_choice = chosen;
@@ -55,7 +54,9 @@ pub fn show(ui: &mut egui::Ui, settings: &mut AppSettings, theme_choice: &mut Th
 
             ui.label("");
             if ui.button("Open folder").clicked() {
-                let _ = std::process::Command::new("explorer").arg(&settings.clip_output_dir).spawn();
+                let _ = std::process::Command::new("explorer")
+                    .arg(&settings.clip_output_dir)
+                    .spawn();
             }
             ui.end_row();
         });

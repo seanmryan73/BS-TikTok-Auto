@@ -17,17 +17,17 @@ impl Default for VideoQuality {
 impl VideoQuality {
     pub fn label(self) -> &'static str {
         match self {
-            VideoQuality::High   => "High (CQ 23)",
+            VideoQuality::High => "High (CQ 23)",
             VideoQuality::Medium => "Medium (CQ 28)",
-            VideoQuality::Low    => "Low (CQ 35)",
+            VideoQuality::Low => "Low (CQ 35)",
         }
     }
 
     pub fn cq_value(self) -> u32 {
         match self {
-            VideoQuality::High   => 23,
+            VideoQuality::High => 23,
             VideoQuality::Medium => 28,
-            VideoQuality::Low    => 35,
+            VideoQuality::Low => 35,
         }
     }
 

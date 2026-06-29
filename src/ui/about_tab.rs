@@ -1,6 +1,6 @@
 use eframe::egui;
 
-const BUILD_DATE: &str = "2026.06.28";
+const APP_VERSION: &str = "2026.06.29a";
 
 /// Returns true if Reset to Defaults was confirmed (caller should apply reset).
 pub fn show(ui: &mut egui::Ui, reset_confirm: &mut bool) -> bool {
@@ -8,7 +8,7 @@ pub fn show(ui: &mut egui::Ui, reset_confirm: &mut bool) -> bool {
 
     ui.add_space(8.0);
     ui.heading("BS TikTok Auto");
-    ui.label(format!("v{}  ·  {}", env!("CARGO_PKG_VERSION"), BUILD_DATE));
+    ui.label(format!("v{}", APP_VERSION));
     ui.separator();
 
     ui.label("Crops Fortnite clips to 9:16 vertical and uploads to TikTok.");
