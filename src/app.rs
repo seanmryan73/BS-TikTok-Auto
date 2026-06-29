@@ -1,8 +1,10 @@
 use crate::auth::{self, AuthResult, AuthStatus, TokenData};
+use crate::pipeline::{self, JobStatus, JobUpdate, PipelineJob};
 use crate::settings::{self, AppSettings, SettingsFile};
 use crate::theme::{ThemeChoice, ThemeManager};
 use crate::ui;
 use eframe::egui::{self, Context};
+use std::path::PathBuf;
 use std::sync::mpsc;
 
 #[derive(PartialEq, Clone, Copy)]
@@ -35,6 +37,12 @@ pub struct App {
 
     // Last auth URL attempted — shown in UI for debugging
     pub last_auth_url: String,
+
+    // Pipeline (crop + upload) state
+    pub jobs: Vec<PipelineJob>,
+    pub next_job_id: u64,
+    pub job_tx: mpsc::Sender<JobUpdate>,
+    pub job_rx: mpsc::Receiver<JobUpdate>,
 }
 
 impl App {
@@ -51,6 +59,8 @@ impl App {
             AuthStatus::Disconnected
         };
 
+        let (job_tx, job_rx) = mpsc::channel();
+
         Self {
             settings,
             theme,
@@ -65,6 +75,10 @@ impl App {
             cred_secret: String::new(),
             code_verifier: String::new(),
             last_auth_url: String::new(),
+            jobs: Vec::new(),
+            next_job_id: 0,
+            job_tx,
+            job_rx,
         }
     }
 
@@ -183,6 +197,55 @@ impl App {
         }
     }
 
+    fn add_jobs(&mut self, paths: Vec<PathBuf>) {
+        let Some(token) = self.token.clone() else { return };
+        let processed_dir = settings::settings_path()
+            .parent()
+            .map(|p| p.join("processed"))
+            .unwrap_or_default();
+        let cq = self.settings.app.quality.cq_value();
+
+        for input_path in paths {
+            let stem = input_path
+                .file_stem()
+                .map(|s| s.to_string_lossy().to_string())
+                .unwrap_or_else(|| "clip".into());
+            let output_path = processed_dir.join(format!("{stem}_vertical.mp4"));
+
+            let id = self.next_job_id;
+            self.next_job_id += 1;
+
+            self.jobs.push(PipelineJob {
+                id,
+                input_path: input_path.clone(),
+                output_path: output_path.clone(),
+                status: JobStatus::Queued,
+            });
+
+            pipeline::spawn_job(id, input_path, output_path, cq, token.clone(), self.job_tx.clone());
+        }
+    }
+
+    fn poll_jobs(&mut self, ctx: &Context) {
+        let mut any_active = false;
+        while let Ok(update) = self.job_rx.try_recv() {
+            match update {
+                JobUpdate::Status(id, status) => {
+                    if let Some(job) = self.jobs.iter_mut().find(|j| j.id == id) {
+                        job.status = status;
+                    }
+                    ctx.request_repaint();
+                }
+            }
+        }
+        if self.jobs.iter().any(|j| !j.status.is_finished()) {
+            any_active = true;
+        }
+        if any_active {
+            ctx.request_repaint_after(std::time::Duration::from_millis(300));
+        }
+    }
+
     fn show_header(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             ui.strong("BS TikTok Auto");
@@ -236,6 +299,7 @@ impl eframe::App for App {
         let ctx = ui.ctx().clone();
         self.theme.apply(&ctx);
         self.poll_auth(&ctx);
+        self.poll_jobs(&ctx);
 
         egui::Panel::top("header").show_inside(ui, |ui| {
             self.show_header(ui);
@@ -244,7 +308,17 @@ impl eframe::App for App {
         });
 
         egui::CentralPanel::default().show_inside(ui, |ui| match self.active_tab {
-            Tab::Queue => ui::queue_tab::show(ui),
+            Tab::Queue => {
+                let connected = self.auth_status == AuthStatus::Connected;
+                let action = ui::queue_tab::show(ui, &self.jobs, connected);
+                match action {
+                    ui::queue_tab::QueueAction::AddFiles(paths) => self.add_jobs(paths),
+                    ui::queue_tab::QueueAction::RemoveJob(id) => {
+                        self.jobs.retain(|j| j.id != id);
+                    }
+                    ui::queue_tab::QueueAction::None => {}
+                }
+            }
             Tab::Auth => {
                 let action = ui::auth_tab::show(
                     ui,
