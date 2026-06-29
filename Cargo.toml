@@ -1,0 +1,24 @@
+[package]
+name = "bs-tiktok-auto"
+version = "2026.6.28"
+edition = "2021"
+authors = ["Sean Ryan <seanmryan@gmail.com>"]
+
+[dependencies]
+eframe     = { version = "0.34", default-features = false, features = ["default_fonts", "glow", "persistence"] }
+egui       = "0.34"
+serde      = { version = "1", features = ["derive"] }
+serde_json = "1"
+ureq       = { version = "2", features = ["rustls"] }
+tiny_http  = "0.12"
+open       = "5"
+
+[profile.release]
+opt-level     = 3
+lto           = "thin"
+codegen-units = 1
+strip         = true
+panic         = "abort"
+
+[profile.dev]
+opt-level = 1
