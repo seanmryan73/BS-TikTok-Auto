@@ -56,7 +56,7 @@ impl AppTheme {
             slider_track:  Color32::from_rgb(0x00, 0x2c, 0x2c),
             selection_bg:  Color32::from_rgb(0x88, 0x22, 0x00),
             border:        Color32::from_rgb(0x00, 0x38, 0x38),
-            widget_border: Color32::from_rgb(0xff, 0x44, 0x22),
+            widget_border: Color32::from_rgb(0x22, 0x99, 0x88),
         }
     }
 
@@ -71,7 +71,7 @@ impl AppTheme {
             slider_track:  Color32::from_rgb(0x28, 0x00, 0x18),
             selection_bg:  Color32::from_rgb(0x77, 0x00, 0x33),
             border:        Color32::from_rgb(0x30, 0x00, 0x1e),
-            widget_border: Color32::from_rgb(0xff, 0x00, 0x88),
+            widget_border: Color32::from_rgb(0xaa, 0x00, 0x55),
         }
     }
 
@@ -86,7 +86,7 @@ impl AppTheme {
             slider_track:  Color32::from_rgb(0x00, 0x10, 0x00),
             selection_bg:  Color32::from_rgb(0x00, 0x44, 0x22),
             border:        Color32::from_rgb(0x00, 0x1c, 0x06),
-            widget_border: Color32::from_rgb(0x00, 0xcc, 0x55),
+            widget_border: Color32::from_rgb(0x00, 0x77, 0x33),
         }
     }
 
