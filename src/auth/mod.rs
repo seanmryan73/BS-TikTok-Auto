@@ -1,1 +1,19 @@
-// Phase 2: TikTok OAuth — tiktok_auth.rs, callback_server.rs, token_store.rs
+pub mod callback_server;
+pub mod tiktok_auth;
+pub mod token_store;
+
+pub use token_store::TokenData;
+
+#[derive(Debug)]
+pub enum AuthResult {
+    Token(TokenData),
+    Error(String),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum AuthStatus {
+    Disconnected,
+    Connecting,
+    Connected,
+    Error(String),
+}

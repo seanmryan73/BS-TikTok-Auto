@@ -15,17 +15,18 @@ pub fn show(ui: &mut egui::Ui, settings: &mut AppSettings, theme_choice: &mut Th
         .spacing([16.0, 8.0])
         .show(ui, |ui| {
             ui.label("Theme");
-            let mut theme_idx = ThemeChoice::ALL.iter().position(|t| *t == *theme_choice).unwrap_or(4);
+            let current = *theme_choice;
             egui::ComboBox::from_id_salt("settings_theme")
-                .selected_text(theme_choice.label())
-                .show_index(ui, &mut theme_idx, ThemeChoice::ALL.len(), |i| {
-                    ThemeChoice::ALL[i].label()
+                .selected_text(current.label())
+                .width(110.0)
+                .show_ui(ui, |ui| {
+                    for &t in ThemeChoice::ALL {
+                        if ui.add(egui::Button::new(t.label()).selected(t == current)).clicked() {
+                            *theme_choice = t;
+                            changed = true;
+                        }
+                    }
                 });
-            let chosen = ThemeChoice::ALL[theme_idx];
-            if chosen != *theme_choice {
-                *theme_choice = chosen;
-                changed = true;
-            }
             ui.end_row();
 
             ui.label("Video Quality");
